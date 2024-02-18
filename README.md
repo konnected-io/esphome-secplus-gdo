@@ -1,0 +1,1 @@
+# Konnected GDO for ESPHome
