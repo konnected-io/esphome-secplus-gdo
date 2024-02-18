@@ -25,14 +25,16 @@ namespace konnectedgdo {
     class GDOComponent : public Component {
     public:
         void setup() override;
-        void loop() override;
+        void loop() override {};
         void dump_config() override;
 
         void register_motion(std::function<void(bool)> f) { f_motion = f; }
         void set_motion_state(gdo_motion_state_t state) { if (f_motion) { f_motion(state == GDO_MOTION_STATE_DETECTED); } }
 
         void register_obstruction(std::function<void(bool)> f) { f_obstruction = f; }
-        void set_obstruction(gdo_obstruction_state_t state) { if (f_obstruction) { f_obstruction(state == GDO_OBSTRUCTION_STATE_OBSTRUCTED); } }
+        void set_obstruction(gdo_obstruction_state_t state) {
+            if (f_obstruction) { f_obstruction(state == GDO_OBSTRUCTION_STATE_OBSTRUCTED); }
+        }
 
         void register_button(std::function<void(bool)> f) { f_button = f; }
         void set_button_state(gdo_button_state_t state) { if (f_button) { f_button(state == GDO_BUTTON_STATE_PRESSED); } }
@@ -57,7 +59,6 @@ namespace konnectedgdo {
 
 
     protected:
-        bool obstruction_from_status_{true};
         gdo_status_t status_;
         std::function<void(gdo_door_state_t, float)> f_door{nullptr};
         std::function<void(gdo_lock_state_t)>        f_lock{nullptr};

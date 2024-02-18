@@ -94,7 +94,7 @@ typedef enum {
 } gdo_paired_device_type_t;
 
 typedef enum {
-    GDO_PROTOCOL_SEC_PLUS_V1 = 0,
+    GDO_PROTOCOL_SEC_PLUS_V1 = 1,
     GDO_PROTOCOL_SEC_PLUS_V2,
     GDO_PROTOCOL_MAX,
 } gdo_protocol_type_t;
@@ -125,6 +125,7 @@ typedef struct {
 } gdo_paired_device_t;
 
 typedef struct {
+    gdo_protocol_type_t protocol; // Protocol type
     gdo_door_state_t door; // Door state
     gdo_light_state_t light; // Light state
     gdo_lock_state_t lock; // Lock state
@@ -142,11 +143,12 @@ typedef struct {
     uint16_t close_ms; // Time door takes to close from fully open in milliseconds
     int32_t door_position; // Door position in percentage (0-10000) [OPEN-CLOSED]
     int32_t door_target; // Door target position in percentage (0-10000) [OPEN-CLOSED]
+    uint32_t client_id; // Client ID
+    uint32_t rolling_code; // Rolling code
 } gdo_status_t;
 
 typedef struct {
     uart_port_t uart_num; // UART port number
-    gdo_protocol_type_t protocol;  // Protocol type
     bool obst_from_status; // Use obstruction status from status message
     bool invert_uart; // Invert UART signal
     gpio_num_t uart_tx_pin; // UART TX pin
@@ -167,7 +169,7 @@ typedef void (*gdo_event_callback_t)(const gdo_status_t *status, gdo_cb_event_t 
 /**
  * @brief Initializes the GDO driver.
  * @param config The configuration for the GDO driver.
- * @return ESP_OK on success, ESP_ERR_INVALID_ARG if the config is invalid, ESP_ERR_NO_MEM if memory allocation fails.
+ * @return ESP_OK on success, ESP_ERR_NO_MEM if task creation fails, ESP_ERR_INVALID_STATE if the driver is not initialized.
 */
 esp_err_t gdo_init(const gdo_config_t *config);
 
@@ -188,7 +190,7 @@ esp_err_t gdo_get_status(gdo_status_t *status);
 
 /**
  * @brief Starts the task that syncs the state of the GDO with the controller.
- * @return ESP_OK on success, ESP_ERR_NO_MEM if task creation fails.
+ * @return ESP_OK on success, ESP_ERR_NO_MEM if task creation fails, ESP_ERR_NOT_FINISHED if the task is already running.
 */
 esp_err_t gdo_sync(void);
 
@@ -356,6 +358,28 @@ const char *gdo_paired_device_type_to_string(gdo_paired_device_type_t type);
  * @return The protocol type as a string.
 */
 const char *gdo_protocol_type_to_string(gdo_protocol_type_t type);
+
+/**
+ * @brief Sets the Security+ V2 rolling code.
+ * @param rolling_code The rolling code to set.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE if the GDO is already synced.
+*/
+esp_err_t gdo_set_rolling_code(uint32_t rolling_code);
+
+/**
+ * @brief Sets the Security+ V2 client id.
+ * @param client_id The client id to set.
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE if the GDO is already synced.
+*/
+esp_err_t gdo_set_client_id(uint32_t client_id);
+
+/**
+ * @brief Sets the protocol to use to communicate with the GDO.
+ * @param protocol The protocol to use.
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG if the protocol is invalid,
+ * ESP_ERR_INVALID_STATE if the protocol is already set.
+*/
+esp_err_t gdo_set_protocol(gdo_protocol_type_t protocol);
 
 #ifdef __cplusplus
 }

@@ -278,4 +278,4 @@ esphome:
   platformio_options:
     build_flags:
       - -L"../../../gdolib"
-      - -llibgdo.a -llibsecplus.a
+      - -llibgdolib.a -llibsecplus.a

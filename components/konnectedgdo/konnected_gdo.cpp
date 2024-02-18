@@ -18,6 +18,7 @@
 #include "konnected_gdo.h"
 #include "esphome/core/application.h"
 #include "esphome/core/log.h"
+#include "inttypes.h"
 
 namespace esphome {
 namespace konnectedgdo {
@@ -28,7 +29,19 @@ namespace konnectedgdo {
         GDOComponent *gdo = static_cast<GDOComponent *>(arg);
         switch (event) {
         case GDO_CB_EVENT_SYNCED:
-            ESP_LOGI(TAG, "Synced: %s", status->synced ? "true" : "false");
+            ESP_LOGI(TAG, "Synced: %s, protocol: %s", status->synced ? "true" : "false", gdo_protocol_type_to_string(status->protocol));
+            if (status->protocol == GDO_PROTOCOL_SEC_PLUS_V2) {
+                ESP_LOGI(TAG, "Client ID: %" PRIu32 ", Rolling code: %" PRIu32, status->client_id, status->rolling_code);
+            }
+
+            if (!status->synced) {
+                if (gdo_set_rolling_code(status->rolling_code + 100) != ESP_OK) {
+                    ESP_LOGE(TAG, "Failed to set rolling code");
+                } else {
+                    ESP_LOGI(TAG, "Rolling code set to %" PRIu32 ", retryng sync", status->rolling_code);
+                    gdo_sync();
+                }
+            }
             break;
         case GDO_CB_EVENT_LIGHT:
             ESP_LOGI(TAG, "Light: %s", gdo_light_state_to_string(status->light));
@@ -87,7 +100,6 @@ namespace konnectedgdo {
     void GDOComponent::setup() {
         gdo_config_t gdo_conf = {
             .uart_num = UART_NUM_1,
-            .protocol = GDO_PROTOCOL == 1 ? GDO_PROTOCOL_SEC_PLUS_V1 : GDO_PROTOCOL_SEC_PLUS_V2,
             .obst_from_status = true,
             .invert_uart = true,
             .uart_tx_pin = (gpio_num_t)GDO_UART_TX_PIN,
@@ -100,8 +112,6 @@ namespace konnectedgdo {
         gdo_start(gdo_event_handler, this);
         ESP_LOGI(TAG, "KonnectedGDO started!");
     }
-
-    void GDOComponent::loop() {}
 
     void GDOComponent::dump_config() {
         ESP_LOGCONFIG(TAG, "Setting up KonnectedGDO...");
