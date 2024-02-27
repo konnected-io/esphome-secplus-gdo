@@ -51,11 +51,14 @@ namespace konnectedgdo {
             ESP_LOGI(TAG, "Lock: %s", gdo_lock_state_to_string(status->lock));
             gdo->set_lock_state(status->lock);
             break;
-        case GDO_CB_EVENT_DOOR_POSITION:
+        case GDO_CB_EVENT_DOOR_POSITION: {
+            float position = (float)(10000 - status->door_position)/10000.0f;
+            float target = (float)(10000 - status->door_target)/10000.0f;
             ESP_LOGI(TAG, "Door: %s, %.2f%%, target: %.2f%%", gdo_door_state_to_string(status->door),
-                    (float)status->door_position/100.0f, (float)status->door_target/100.0f);
-            gdo->set_door_state(status->door, (float)status->door_position/10000.0f);
+                     position, target);
+            gdo->set_door_state(status->door, position);
             break;
+        }
         case GDO_CB_EVENT_LEARN:
             ESP_LOGI(TAG, "Learn: %s", gdo_learn_state_to_string(status->learn));
             break;
