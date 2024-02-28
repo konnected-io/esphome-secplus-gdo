@@ -57,6 +57,9 @@ namespace konnectedgdo {
             ESP_LOGI(TAG, "Door: %s, %.2f%%, target: %.2f%%", gdo_door_state_to_string(status->door),
                      position, target);
             gdo->set_door_state(status->door, position);
+            if (status->door != GDO_DOOR_STATE_OPENING && status->door != GDO_DOOR_STATE_CLOSING) {
+                gdo->set_motor_state(GDO_MOTOR_STATE_OFF);
+            }
             break;
         }
         case GDO_CB_EVENT_LEARN:
