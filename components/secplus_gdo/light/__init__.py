@@ -22,24 +22,24 @@ import esphome.config_validation as cv
 from esphome.components import light
 from esphome.const import CONF_OUTPUT_ID  # New in 2023.5
 
-from .. import KONNECTED_GDO_CONFIG_SCHEMA, konnectedgdo_ns, CONF_KONNECTEDGDO_ID
+from .. import SECPLUS_GDO_CONFIG_SCHEMA, secplus_gdo_ns, CONF_SECPLUS_GDO_ID
 
-DEPENDENCIES = ["konnectedgdo"]
+DEPENDENCIES = ["secplus_gdo"]
 
-GDOLight = konnectedgdo_ns.class_(
+GDOLight = secplus_gdo_ns.class_(
     "GDOLight", light.LightOutput, cg.Component
 )
 
 
 CONFIG_SCHEMA = light.LIGHT_SCHEMA.extend(
     {cv.GenerateID(CONF_OUTPUT_ID): cv.declare_id(GDOLight)}
-).extend(KONNECTED_GDO_CONFIG_SCHEMA)
+).extend(SECPLUS_GDO_CONFIG_SCHEMA)
 
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_OUTPUT_ID])
     await cg.register_component(var, config)
     await light.register_light(var, config)
-    parent = await cg.get_variable(config[CONF_KONNECTEDGDO_ID])
+    parent = await cg.get_variable(config[CONF_SECPLUS_GDO_ID])
     text = "std::bind(&" + str(GDOLight) + "::set_state," + str(config[CONF_OUTPUT_ID]) + ",std::placeholders::_1)"
     cg.add(parent.register_light(cg.RawExpression(text)))

@@ -12,7 +12,7 @@
 #include "../gdolib.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
 
     class GDOSwitch : public switch_::Switch, public Component {
     public:
@@ -25,5 +25,5 @@ namespace konnectedgdo {
         }
     };
 
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

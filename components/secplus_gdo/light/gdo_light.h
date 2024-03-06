@@ -22,7 +22,7 @@
 #include "../gdolib.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
 
 class GDOLight : public binary::BinaryLightOutput, public Component {
     public:
@@ -48,5 +48,5 @@ class GDOLight : public binary::BinaryLightOutput, public Component {
         light::LightState *state_;
 
     }; // GDOLight
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

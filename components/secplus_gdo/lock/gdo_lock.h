@@ -22,7 +22,7 @@
 #include "../gdolib.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
 
     class GDOLock : public lock::Lock, public Component {
         public:
@@ -56,5 +56,5 @@ namespace konnectedgdo {
         }
     };
 
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

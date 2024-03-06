@@ -15,15 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "konnected_gdo.h"
+#include "secplus_gdo.h"
 #include "esphome/core/application.h"
 #include "esphome/core/log.h"
 #include "inttypes.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
 
-    static const char* const TAG = "konnectedGDO";
+    static const char* const TAG = "secplus_gdo";
 
     static void gdo_event_handler(const gdo_status_t* status, gdo_cb_event_t event, void *arg) {
         GDOComponent *gdo = static_cast<GDOComponent *>(arg);
@@ -116,12 +116,12 @@ namespace konnectedgdo {
         gdo_init(&gdo_conf);
         gdo_get_status(&this->status_);
         gdo_start(gdo_event_handler, this);
-        ESP_LOGI(TAG, "KonnectedGDO started!");
+        ESP_LOGI(TAG, "secplus GDO started!");
     }
 
     void GDOComponent::dump_config() {
-        ESP_LOGCONFIG(TAG, "Setting up KonnectedGDO...");
+        ESP_LOGCONFIG(TAG, "Setting up secplus GDO ...");
     }
 
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome
