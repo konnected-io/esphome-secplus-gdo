@@ -18,6 +18,7 @@
 #pragma once
 
 #include "esphome/components/cover/cover.h"
+#include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 #include "../gdolib.h"
 
@@ -26,7 +27,10 @@ namespace secplus_gdo {
 
 using namespace esphome::cover;
 
+    class CoverClosingTrigger;
+
     class GDODoor : public cover::Cover, public Component {
+        CoverClosingTrigger *closeTrigger;
     public:
         cover::CoverTraits get_traits() override {
             auto traits = CoverTraits();
@@ -34,6 +38,10 @@ using namespace esphome::cover;
             traits.set_supports_toggle(true);
             traits.set_supports_position(true);
             return traits;
+        }
+
+        void register_door_closing_trigger(CoverClosingTrigger *trigger) {
+            this->closeTrigger = trigger;
         }
 
         void set_state(gdo_door_state_t state, float position) {
@@ -72,25 +80,37 @@ using namespace esphome::cover;
         }
 
     protected:
-        void control(const cover::CoverCall& call) override {
-            if (call.get_stop()) {
-                gdo_door_stop();
-            }
-            if (call.get_toggle()) {
-                gdo_door_toggle();
-            }
-            if (call.get_position().has_value()) {
-                auto pos = *call.get_position();
-                if (pos == COVER_OPEN) {
-                    gdo_door_open();
-                } else if (pos == COVER_CLOSED) {
-                    gdo_door_close();
-                } else {
-                    gdo_door_move_to_target(pos * 10000);
-                }
-            }
+        void control(const cover::CoverCall& call);
+    };
+
+    class CoverClosingTrigger : public Trigger<> {
+    public:
+        CoverClosingTrigger(GDODoor* gdo_door) {
+            gdo_door->register_door_closing_trigger(this);
         }
     };
 
-} // namespace secplus_gdo
+void GDODoor::control(const cover::CoverCall& call) {
+    if (call.get_stop()) {
+        gdo_door_stop();
+    }
+    if (call.get_toggle()) {
+        if (this->position != COVER_CLOSED) {
+            this->closeTrigger->trigger();
+        } else {
+            gdo_door_toggle();
+        }
+    }
+    if (call.get_position().has_value()) {
+        auto pos = *call.get_position();
+        if (pos == COVER_OPEN) {
+            gdo_door_open();
+        } else if (pos == COVER_CLOSED) {
+            this->closeTrigger->trigger();
+        } else {
+            gdo_door_move_to_target(pos * 10000);
+        }
+    }
+}
+} // namespace konnectedgdo
 } // namespace esphome
