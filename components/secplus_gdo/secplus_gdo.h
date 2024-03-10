@@ -21,7 +21,7 @@
 #include "gdolib.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
     class GDOComponent : public Component {
     public:
         void setup() override;
@@ -71,5 +71,5 @@ namespace konnectedgdo {
         std::function<void(bool)>                    f_learn{nullptr};
 
     }; // GDOComponent
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

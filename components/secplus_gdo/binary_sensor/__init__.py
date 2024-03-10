@@ -19,42 +19,42 @@
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor
+from esphome.components import binary_sensor
 from esphome.const import CONF_ID
 
-from .. import KONNECTED_GDO_CONFIG_SCHEMA, konnectedgdo_ns, CONF_KONNECTEDGDO_ID
+from .. import SECPLUS_GDO_CONFIG_SCHEMA, secplus_gdo_ns, CONF_SECPLUS_GDO_ID
 
-DEPENDENCIES = ["konnectedgdo"]
+DEPENDENCIES = ["secplus_gdo"]
 
-GDOStat = konnectedgdo_ns.class_("GDOStat", sensor.Sensor, cg.Component)
+GDOBinarySensor = secplus_gdo_ns.class_(
+    "GDOBinarySensor", binary_sensor.BinarySensor, cg.Component
+)
 
 CONF_TYPE = "type"
 TYPES = {
-    "openings": "register_openings",
-    "paired_devices_total": "register_paired_total",
-    "paired_devices_remotes": "register_paired_remotes",
-    "paired_devices_keypads": "register_paired_keypads",
-    "paired_devices_wall_controls": "register_paired_wall_controls",
-    "paired_devices_accessories":"register_paired_accessories",
+    "motion": "register_motion",
+    "obstruction": "register_obstruction",
+    "motor": "register_motor",
+    "button": "register_button",
 }
 
 
 CONFIG_SCHEMA = (
-    sensor.sensor_schema(GDOStat)
+    binary_sensor.binary_sensor_schema(GDOBinarySensor)
     .extend(
         {
             cv.Required(CONF_TYPE): cv.enum(TYPES, lower=True),
         }
     )
-    .extend(KONNECTED_GDO_CONFIG_SCHEMA)
+    .extend(SECPLUS_GDO_CONFIG_SCHEMA)
 )
 
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
-    await sensor.register_sensor(var, config)
+    await binary_sensor.register_binary_sensor(var, config)
     await cg.register_component(var, config)
-    parent = await cg.get_variable(config[CONF_KONNECTEDGDO_ID])
+    parent = await cg.get_variable(config[CONF_SECPLUS_GDO_ID])
     fcall = str(parent) + "->" + str(TYPES[config[CONF_TYPE]])
-    text = fcall + "(std::bind(&" + str(GDOStat) + "::publish_state," + str(config[CONF_ID]) + ",std::placeholders::_1))"
+    text = fcall + "(std::bind(&" + str(GDOBinarySensor) + "::publish_state," + str(config[CONF_ID]) + ",std::placeholders::_1))"
     cg.add((cg.RawExpression(text)))

@@ -18,12 +18,12 @@
 # pragma once
 
 #include "esphome/core/component.h"
-#include "esphome/components/sensor/sensor.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
 
-class GDOStat : public sensor::Sensor, public Component {};
+class GDOBinarySensor : public binary_sensor::BinarySensor, public Component {};
 
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

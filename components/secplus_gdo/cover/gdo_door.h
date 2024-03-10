@@ -22,7 +22,7 @@
 #include "../gdolib.h"
 
 namespace esphome {
-namespace konnectedgdo {
+namespace secplus_gdo {
 
 using namespace esphome::cover;
 
@@ -92,5 +92,5 @@ using namespace esphome::cover;
         }
     };
 
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

@@ -27,16 +27,10 @@
 ####
 # INTRODUCTION
 #
-# This ESPHome based firmware configuration is designed for the Konnected Garage Door Opener GDOv2-S which is built on the ESP32-S3-MINI.
-# The Garage Door Opener retrofits an older style traditional garage door opener with a dry-contact trigger and has the
-# following features which are included as packages below:
+# This ESPHome based firmware configuration is designed for the Konnected Garage Door Opener GDOv2-Q (GDO blaQ)
+# which is designed as a smart garage door accessory for Security+ and Security+ 2.0 garage openers manufactured
+# by Chamberlain Group brands including Chamberlain, LiftMaster, Craftsman and Merlin (Australia).
 #
-# 1. Wired contact sensor for detecting open/closed state of garage door
-# 2. Optical range sensor for detecting open/closed state of garage door
-# 3. Emulates a garage door opener button wired to a dry contact relay to open/close the garage door.
-# 4. Adds a Garage Door "Cover" entity that is exposed to Home Assistant. The cover entity incorporates the state of the
-#    garage door and controls to open/close/stop it.
-# 5. Flashes an onboard LED and beeps an onboard piezo sounder as a warning before automatically closing.
 
 ####
 # GENERAL SETTINGS
@@ -54,11 +48,10 @@ substitutions:
   # By default, the name of the ESPHome device is "garage-door-xxxxxx" where xxxxxx is a unique identifier. The device's
   # hostname on your network is also defined by the name, defaulting to "garage-door-xxxxxx.local". Edit this variable to
   # customize the name and hostname. Note: only lowercase characters, numbers and hyphen(-) are allowed.
-  id_prefix: konnectedgdo
-  name: garage-door
+  name: konnected
   friendly_name: Garage Door Opener
   project_name: konnected.garage-door-gdov2-q
-  project_version: "0.0.1"
+  project_version: "0.0.2"
   garage_door_cover_name: Garage Door
 
   ####
@@ -98,13 +91,13 @@ substitutions:
   status_led: GPIO18
 
 external_components:
+  # - source:
+  #     type: git
+  #     url: https://github.com/konnected-io/esphome-secplus-gdo.git
+  #   refresh: 1s
   - source:
-      type: git
-      url: https://github.com/konnected-io/esphome-konnectedgdo.git
-    refresh: 1s
-#  - source:
-#      type: local
-#      path: components
+      type: local
+      path: components
 
 ####
 # PACKAGES
@@ -153,32 +146,27 @@ packages:
       # Self test script used to validate the hardware post-assembly
       # - packages/gdo-self-test.yaml
 
-
-esp32:
-  framework:
-    type: esp-idf
-
-konnectedgdo:
+secplus_gdo:
   id: konnected_blaq
   input_gdo_pin: ${uart_rx_pin}
   output_gdo_pin: ${uart_tx_pin}
   input_obst_pin: ${input_obst_pin}
 
 light:
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     name: garage_light
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     id: gdo_light
 
 cover:
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     name: garage_door
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     id: gdo_door
 
 sensor:
-  - platform: konnectedgdo
-    konnectedgdo_id: konnected_blaq
+  - platform: secplus_gdo
+    secplus_gdo_id: konnected_blaq
     id: gdo_openings
     type: openings
     name: "Garage Door Openings"
@@ -186,42 +174,42 @@ sensor:
     icon: mdi:open-in-app
 
 lock:
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     id: gdo_lock_remotes
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     name: "Lock remotes"
 
 binary_sensor:
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     name: "Garage Motion Sensor"
     id: gdo_motion
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     device_class: motion
     type: motion
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     name: "Garage Door Obstruction Sensor"
     id: gdo_obst
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     device_class: problem
     type: obstruction
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     name: "Garage Door Motor"
     id: gdo_motor
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     entity_category: diagnostic
     type: motor
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     name: "Garage Button"
     id: gdo_button
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     entity_category: diagnostic
     type: button
 
 switch:
-  - platform: konnectedgdo
+  - platform: secplus_gdo
     id: "gdo_learn"
     type: learn
-    konnectedgdo_id: konnected_blaq
+    secplus_gdo_id: konnected_blaq
     name: "Learn"
     icon: mdi:plus-box
     entity_category: config
@@ -237,7 +225,7 @@ button:
 # Enables automatic discovery and upgrades via ESPHome Dashboard
 # more: https://esphome.io/guides/getting_started_hassio.html
 dashboard_import:
-  package_import_url: github://konnected-io/konnected-esphome/garage-door-GDOv2-S.yaml@master
+  package_import_url: github://konnected-io/esphome-secplus-gdo/test.yaml@master
   import_full_config: false
 
 ####
@@ -274,7 +262,6 @@ web_server:
   include_internal: true
 
 esphome:
-  name: ${id_prefix}
   platformio_options:
     build_flags:
       - -L"../../../gdolib"

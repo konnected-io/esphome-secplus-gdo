@@ -22,23 +22,23 @@ import esphome.config_validation as cv
 from esphome.components import cover
 from esphome.const import CONF_ID
 
-from .. import KONNECTED_GDO_CONFIG_SCHEMA, konnectedgdo_ns, CONF_KONNECTEDGDO_ID
+from .. import SECPLUS_GDO_CONFIG_SCHEMA, secplus_gdo_ns, CONF_SECPLUS_GDO_ID
 
-DEPENDENCIES = ["konnectedgdo"]
+DEPENDENCIES = ["secplus_gdo"]
 
-GDODoor = konnectedgdo_ns.class_("GDODoor", cover.Cover, cg.Component)
+GDODoor = secplus_gdo_ns.class_("GDODoor", cover.Cover, cg.Component)
 
 CONFIG_SCHEMA = cover.COVER_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(GDODoor),
     }
-).extend(KONNECTED_GDO_CONFIG_SCHEMA)
+).extend(SECPLUS_GDO_CONFIG_SCHEMA)
 
 
 async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await cover.register_cover(var, config)
-    parent = await cg.get_variable(config[CONF_KONNECTEDGDO_ID])
+    parent = await cg.get_variable(config[CONF_SECPLUS_GDO_ID])
     text = "std::bind(&" + str(GDODoor) + "::set_state," + str(config[CONF_ID]) + ",std::placeholders::_1,std::placeholders::_2)"
     cg.add(parent.register_door(cg.RawExpression(text)))
