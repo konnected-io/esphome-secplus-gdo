@@ -19,8 +19,9 @@
 
 import esphome.codegen as cg
 import esphome.config_validation as cv
+from esphome import automation
 from esphome.components import cover
-from esphome.const import CONF_ID
+from esphome.const import CONF_ID, CONF_TRIGGER_ID
 
 from .. import SECPLUS_GDO_CONFIG_SCHEMA, secplus_gdo_ns, CONF_SECPLUS_GDO_ID
 
@@ -28,9 +29,18 @@ DEPENDENCIES = ["secplus_gdo"]
 
 GDODoor = secplus_gdo_ns.class_("GDODoor", cover.Cover, cg.Component)
 
+CoverClosingTrigger = secplus_gdo_ns.class_(
+    "CoverClosingTrigger", automation.Trigger.template()
+)
+
+CONF_BEFORE_CLOSING = "before_closing"
+
 CONFIG_SCHEMA = cover.COVER_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(GDODoor),
+        cv.Optional(CONF_BEFORE_CLOSING): automation.validate_automation(
+            {cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(CoverClosingTrigger)}
+        ),
     }
 ).extend(SECPLUS_GDO_CONFIG_SCHEMA)
 
@@ -42,3 +52,6 @@ async def to_code(config):
     parent = await cg.get_variable(config[CONF_SECPLUS_GDO_ID])
     text = "std::bind(&" + str(GDODoor) + "::set_state," + str(config[CONF_ID]) + ",std::placeholders::_1,std::placeholders::_2)"
     cg.add(parent.register_door(cg.RawExpression(text)))
+    for conf in config.get(CONF_BEFORE_CLOSING, []):
+        trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
+        await automation.build_automation(trigger, [], conf)

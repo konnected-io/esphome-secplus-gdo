@@ -91,13 +91,13 @@ substitutions:
   status_led: GPIO18
 
 external_components:
-  # - source:
-  #     type: git
-  #     url: https://github.com/konnected-io/esphome-secplus-gdo.git
-  #   refresh: 1s
   - source:
-      type: local
-      path: components
+      type: git
+      url: https://github.com/konnected-io/esphome-secplus-gdo.git
+    refresh: 1s
+  #- source:
+  #    type: local
+  #    path: components
 
 ####
 # PACKAGES
@@ -163,6 +163,10 @@ cover:
     name: garage_door
     secplus_gdo_id: konnected_blaq
     id: gdo_door
+    before_closing:
+      - button.press: pre_close_warning
+      - delay: $garage_door_close_warning_duration
+      - button.press: garage_door_close_button
 
 sensor:
   - platform: secplus_gdo
@@ -219,6 +223,11 @@ button:
     name: Factory Reset
     entity_category: config
 
+  - platform: secplus_gdo
+    name: garage_door_close_button
+    secplus_gdo_id: konnected_blaq
+    id: garage_door_close_button
+    type: door_close
 
 ####
 # DASHBOARD IMPORT
