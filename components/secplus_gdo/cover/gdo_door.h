@@ -112,5 +112,5 @@ void GDODoor::control(const cover::CoverCall& call) {
         }
     }
 }
-} // namespace konnectedgdo
+} // namespace secplus_gdo
 } // namespace esphome

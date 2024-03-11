@@ -54,8 +54,8 @@ namespace secplus_gdo {
         case GDO_CB_EVENT_DOOR_POSITION: {
             float position = (float)(10000 - status->door_position)/10000.0f;
             float target = (float)(10000 - status->door_target)/10000.0f;
-            ESP_LOGI(TAG, "Door: %s, %.2f%%, target: %.2f%%", gdo_door_state_to_string(status->door),
-                     position, target);
+            ESP_LOGI(TAG, "Door: %s, %.0f%%, target: %.0f%%", gdo_door_state_to_string(status->door),
+                     position*100, target*100);
             gdo->set_door_state(status->door, position);
             if (status->door != GDO_DOOR_STATE_OPENING && status->door != GDO_DOOR_STATE_CLOSING) {
                 gdo->set_motor_state(GDO_MOTOR_STATE_OFF);
