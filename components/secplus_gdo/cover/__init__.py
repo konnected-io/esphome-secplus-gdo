@@ -29,17 +29,27 @@ DEPENDENCIES = ["secplus_gdo"]
 
 GDODoor = secplus_gdo_ns.class_("GDODoor", cover.Cover, cg.Component)
 
-CoverClosingTrigger = secplus_gdo_ns.class_(
-    "CoverClosingTrigger", automation.Trigger.template()
+CoverClosingStartTrigger = secplus_gdo_ns.class_(
+    "CoverClosingStartTrigger", automation.Trigger.template()
 )
 
-CONF_BEFORE_CLOSING = "before_closing"
+CoverClosingEndTrigger = secplus_gdo_ns.class_(
+    "CoverClosingEndTrigger", automation.Trigger.template()
+)
+
+CONF_PRE_CLOSE_WARNING_DURATION = "pre_close_warning_duration"
+CONF_PRE_CLOSE_WARNING_START = "pre_close_warning_start"
+CONF_PRE_CLOSE_WARNING_END = "pre_close_warning_end"
 
 CONFIG_SCHEMA = cover.COVER_SCHEMA.extend(
     {
         cv.GenerateID(): cv.declare_id(GDODoor),
-        cv.Optional(CONF_BEFORE_CLOSING): automation.validate_automation(
-            {cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(CoverClosingTrigger)}
+        cv.Optional(CONF_PRE_CLOSE_WARNING_DURATION, default=0): cv.positive_time_period_milliseconds,
+        cv.Optional(CONF_PRE_CLOSE_WARNING_START): automation.validate_automation(
+            {cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(CoverClosingStartTrigger)}
+        ),
+        cv.Optional(CONF_PRE_CLOSE_WARNING_END): automation.validate_automation(
+            {cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(CoverClosingEndTrigger)}
         ),
     }
 ).extend(SECPLUS_GDO_CONFIG_SCHEMA)
@@ -52,6 +62,13 @@ async def to_code(config):
     parent = await cg.get_variable(config[CONF_SECPLUS_GDO_ID])
     text = "std::bind(&" + str(GDODoor) + "::set_state," + str(config[CONF_ID]) + ",std::placeholders::_1,std::placeholders::_2)"
     cg.add(parent.register_door(cg.RawExpression(text)))
-    for conf in config.get(CONF_BEFORE_CLOSING, []):
+    cg.add(var.set_pre_close_warning_duration(config[CONF_PRE_CLOSE_WARNING_DURATION]))
+    for conf in config.get(CONF_PRE_CLOSE_WARNING_START, []):
         trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
         await automation.build_automation(trigger, [], conf)
+        cg.add(var.register_door_closing_warn_start_trigger(trigger))
+    for conf in config.get(CONF_PRE_CLOSE_WARNING_END, []):
+        trigger = cg.new_Pvariable(conf[CONF_TRIGGER_ID], var)
+        await automation.build_automation(trigger, [], conf)
+        cg.add(var.register_door_closing_warn_end_trigger(trigger))
+

@@ -18,19 +18,15 @@
 #pragma once
 
 #include "esphome/components/cover/cover.h"
-#include "esphome/core/automation.h"
 #include "esphome/core/component.h"
+#include "automation.h"
 #include "../gdolib.h"
 
 namespace esphome {
 namespace secplus_gdo {
 
 using namespace esphome::cover;
-
-    class CoverClosingTrigger;
-
     class GDODoor : public cover::Cover, public Component {
-        CoverClosingTrigger *closeTrigger;
     public:
         cover::CoverTraits get_traits() override {
             auto traits = CoverTraits();
@@ -40,77 +36,25 @@ using namespace esphome::cover;
             return traits;
         }
 
-        void register_door_closing_trigger(CoverClosingTrigger *trigger) {
-            this->closeTrigger = trigger;
+        void register_door_closing_warn_start_trigger(CoverClosingStartTrigger *trigger) {
+            this->pre_close_start_trigger = trigger;
         }
 
-        void set_state(gdo_door_state_t state, float position) {
-            bool save_to_flash = false; //true;
-            switch (state) {
-            case GDO_DOOR_STATE_OPEN:
-                this->position = COVER_OPEN;
-                this->current_operation = COVER_OPERATION_IDLE;
-                break;
-            case GDO_DOOR_STATE_CLOSED:
-                this->position = COVER_CLOSED;
-                this->current_operation = COVER_OPERATION_IDLE;
-                break;
-            case GDO_DOOR_STATE_OPENING:
-                this->current_operation = COVER_OPERATION_OPENING;
-                this->position = position;
-                save_to_flash = false;
-                break;
-            case GDO_DOOR_STATE_CLOSING:
-                this->current_operation = COVER_OPERATION_CLOSING;
-                this->position = position;
-                save_to_flash = false;
-                break;
-            case GDO_DOOR_STATE_STOPPED:
-                this->current_operation = COVER_OPERATION_IDLE;
-                this->position = position;
-                break;
-            case GDO_DOOR_STATE_MAX:
-            default:
-                this->current_operation = COVER_OPERATION_IDLE;
-                this->position = position;
-                break;
-            }
-
-            this->publish_state(save_to_flash);
+        void register_door_closing_warn_end_trigger(CoverClosingEndTrigger *trigger) {
+            this->pre_close_end_trigger = trigger;
         }
+
+        void start_pre_close();
+        void set_pre_close_warning_duration(uint32_t ms) { this->pre_close_duration_ = ms; }
+        void set_state(gdo_door_state_t state, float position);
 
     protected:
         void control(const cover::CoverCall& call);
-    };
 
-    class CoverClosingTrigger : public Trigger<> {
-    public:
-        CoverClosingTrigger(GDODoor* gdo_door) {
-            gdo_door->register_door_closing_trigger(this);
-        }
+        CoverClosingStartTrigger *pre_close_start_trigger{nullptr};
+        CoverClosingEndTrigger   *pre_close_end_trigger{nullptr};
+        uint32_t                 pre_close_duration_{0};
+        bool                     pre_close_active_{false};
     };
-
-void GDODoor::control(const cover::CoverCall& call) {
-    if (call.get_stop()) {
-        gdo_door_stop();
-    }
-    if (call.get_toggle()) {
-        if (this->position != COVER_CLOSED) {
-            this->closeTrigger->trigger();
-        } else {
-            gdo_door_toggle();
-        }
-    }
-    if (call.get_position().has_value()) {
-        auto pos = *call.get_position();
-        if (pos == COVER_OPEN) {
-            gdo_door_open();
-        } else if (pos == COVER_CLOSED) {
-            this->closeTrigger->trigger();
-        } else {
-            gdo_door_move_to_target(pos * 10000);
-        }
-    }
-}
 } // namespace secplus_gdo
 } // namespace esphome

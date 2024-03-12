@@ -91,13 +91,13 @@ substitutions:
   status_led: GPIO18
 
 external_components:
-  - source:
-      type: git
-      url: https://github.com/konnected-io/esphome-secplus-gdo.git
-    refresh: 1s
   #- source:
-  #    type: local
-  #    path: components
+  #    type: git
+  #    url: https://github.com/konnected-io/esphome-secplus-gdo.git
+  #  refresh: 1s
+  - source:
+      type: local
+      path: components
 
 ####
 # PACKAGES
@@ -146,6 +146,11 @@ packages:
       # Self test script used to validate the hardware post-assembly
       # - packages/gdo-self-test.yaml
 
+script:
+  - id: pc_warn
+    then:
+      - button.press: pre_close_warning
+
 secplus_gdo:
   id: konnected_blaq
   input_gdo_pin: ${uart_rx_pin}
@@ -163,10 +168,14 @@ cover:
     name: garage_door
     secplus_gdo_id: konnected_blaq
     id: gdo_door
-    before_closing:
-      - button.press: pre_close_warning
-      - delay: $garage_door_close_warning_duration
-      - button.press: garage_door_close_button
+    pre_close_warning_duration: $garage_door_close_warning_duration
+    pre_close_warning_start:
+      - script.execute:
+          id: pc_warn
+    pre_close_warning_end:
+      - script.stop: pc_warn
+      - light.turn_off: warning_led
+      #- light.turn_off: warning_beep
 
 sensor:
   - platform: secplus_gdo
@@ -222,12 +231,6 @@ button:
   - platform: factory_reset
     name: Factory Reset
     entity_category: config
-
-  - platform: secplus_gdo
-    name: garage_door_close_button
-    secplus_gdo_id: konnected_blaq
-    id: garage_door_close_button
-    type: door_close
 
 ####
 # DASHBOARD IMPORT
