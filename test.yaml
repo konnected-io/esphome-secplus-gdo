@@ -232,6 +232,23 @@ button:
     name: Factory Reset
     entity_category: config
 
+number:
+  - platform: secplus_gdo
+    name: Garage door opening duration
+    secplus_gdo_id: konnected_blaq
+    entity_category: config
+    id: gdo_open_duration
+    type: open_duration
+    unit_of_measurement: "ms"
+
+  - platform: secplus_gdo
+    name: Garage door closing duration
+    secplus_gdo_id: konnected_blaq
+    entity_category: config
+    id: gdo_close_duration
+    type: close_duration
+    unit_of_measurement: "ms"
+
 ####
 # DASHBOARD IMPORT
 # Enables automatic discovery and upgrades via ESPHome Dashboard

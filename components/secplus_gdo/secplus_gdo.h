@@ -18,6 +18,7 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "number/gdo_number.h"
 #include "gdolib.h"
 
 namespace esphome {
@@ -27,6 +28,8 @@ namespace secplus_gdo {
         void setup() override;
         void loop() override {};
         void dump_config() override;
+        // Use Late priority so we do not start the GDO lib until all saved preferences are loaded
+        float get_setup_priority() const override { return setup_priority::LATE; }
 
         void register_motion(std::function<void(bool)> f) { f_motion = f; }
         void set_motion_state(gdo_motion_state_t state) { if (f_motion) { f_motion(state == GDO_MOTION_STATE_DETECTED); } }
@@ -57,6 +60,11 @@ namespace secplus_gdo {
         void register_learn(std::function<void(bool)> f) { f_learn = f; }
         void set_learn_state(gdo_learn_state_t state) { if (f_learn) { f_learn(state == GDO_LEARN_STATE_ACTIVE); } }
 
+        void register_open_duration(GDONumber* num) { open_duration_ = num; }
+        void set_open_duration(uint16_t ms ) { if (open_duration_) { open_duration_->update_state(ms); } }
+
+        void register_close_duration(GDONumber* num) { close_duration_ = num; }
+        void set_close_duration(uint16_t ms ) { if (close_duration_) { close_duration_->update_state(ms); } }
 
     protected:
         gdo_status_t status_;
@@ -69,6 +77,8 @@ namespace secplus_gdo {
         std::function<void(bool)>                    f_button{nullptr};
         std::function<void(bool)>                    f_motor{nullptr};
         std::function<void(bool)>                    f_learn{nullptr};
+        GDONumber*                                   open_duration_{nullptr};
+        GDONumber*                                   close_duration_{nullptr};
 
     }; // GDOComponent
 } // namespace secplus_gdo
