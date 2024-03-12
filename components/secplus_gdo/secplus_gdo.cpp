@@ -97,6 +97,14 @@ namespace secplus_gdo {
                     status->paired_devices.total_wall_controls, status->paired_devices.total_accessories,
                     status->paired_devices.total_all);
             break;
+        case GDO_CB_EVENT_OPEN_DURATION_MEASURMENT:
+            ESP_LOGI(TAG, "Open duration: %d", status->open_ms);
+            gdo->set_open_duration(status->open_ms);
+            break;
+        case GDO_CB_EVENT_CLOSE_DURATION_MEASURMENT:
+            ESP_LOGI(TAG, "Close duration: %d", status->close_ms);
+            gdo->set_close_duration(status->close_ms);
+            break;
         default:
             ESP_LOGI(TAG, "Unknown event: %d", event);
             break;

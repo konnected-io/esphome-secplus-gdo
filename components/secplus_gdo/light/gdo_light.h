@@ -39,14 +39,13 @@ class GDOLight : public binary::BinaryLightOutput, public Component {
 
         void set_state(gdo_light_state_t state) {
             bool is_on = state == GDO_LIGHT_STATE_ON;
-            state_->current_values.set_state(is_on);
-            state_->remote_values.set_state(is_on);
-            state_->publish_state();
+            this->state_->current_values.set_state(is_on);
+            this->state_->remote_values.set_state(is_on);
+            this->state_->publish_state();
         }
 
     private:
-        light::LightState *state_;
-
+        light::LightState *state_{nullptr};
     }; // GDOLight
 } // namespace secplus_gdo
 } // namespace esphome
