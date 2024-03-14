@@ -19,6 +19,8 @@
 
 #include "esphome/core/component.h"
 #include "number/gdo_number.h"
+#include "esphome/core/defines.h"
+#include "select/gdo_select.h"
 #include "gdolib.h"
 
 namespace esphome {
@@ -30,6 +32,9 @@ namespace secplus_gdo {
         void dump_config() override;
         // Use Late priority so we do not start the GDO lib until all saved preferences are loaded
         float get_setup_priority() const override { return setup_priority::LATE; }
+
+        void register_protocol_select(GDOSelect *select) { this->protocol_select_ = select; }
+        void set_protocol_state(gdo_protocol_type_t protocol) { if (this->protocol_select_) { this->protocol_select_->update_state(protocol); } }
 
         void register_motion(std::function<void(bool)> f) { f_motion = f; }
         void set_motion_state(gdo_motion_state_t state) { if (f_motion) { f_motion(state == GDO_MOTION_STATE_DETECTED); } }
@@ -79,6 +84,7 @@ namespace secplus_gdo {
         std::function<void(bool)>                    f_learn{nullptr};
         GDONumber*                                   open_duration_{nullptr};
         GDONumber*                                   close_duration_{nullptr};
+        GDOSelect*                                   protocol_select_{nullptr};
 
     }; // GDOComponent
 } // namespace secplus_gdo
