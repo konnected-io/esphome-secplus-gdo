@@ -227,6 +227,14 @@ switch:
     icon: mdi:plus-box
     entity_category: config
 
+select:
+  - platform: secplus_gdo
+    id: gdo_protocol
+    secplus_gdo_id: konnected_blaq
+    name: protocol
+    icon: mdi:settings
+    entity_category: config
+
 button:
   - platform: factory_reset
     name: Factory Reset

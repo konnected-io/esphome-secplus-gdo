@@ -41,7 +41,10 @@ namespace secplus_gdo {
                     ESP_LOGI(TAG, "Rolling code set to %" PRIu32 ", retryng sync", status->rolling_code);
                     gdo_sync();
                 }
+            } else {
+                gdo->set_protocol_state(status->protocol);
             }
+
             break;
         case GDO_CB_EVENT_LIGHT:
             ESP_LOGI(TAG, "Light: %s", gdo_light_state_to_string(status->light));
