@@ -48,7 +48,7 @@ void GDODoor::set_state(gdo_door_state_t state, float position) {
     this->publish_state(false);
 }
 
-void GDODoor::start_pre_close() {
+void GDODoor::start_pre_close(uint32_t pos) {
     if (this->pre_close_active_) {
         return;
     }
@@ -64,7 +64,11 @@ void GDODoor::start_pre_close() {
         if (this->pre_close_end_trigger) {
             this->pre_close_end_trigger->trigger();
         }
-        gdo_door_close();
+        if (pos > 0) {
+            gdo_door_move_to_target(pos);
+        } else {
+            gdo_door_close();
+        }
     });
 
     this->pre_close_active_ = true;
@@ -94,12 +98,30 @@ void GDODoor::control(const cover::CoverCall& call) {
 
     if (call.get_position().has_value()) {
         auto pos = *call.get_position();
+
+        if (this->pre_close_active_) {
+            this->cancel_timeout("pre_close");
+            this->pre_close_active_ = false;
+            if (this->pre_close_end_trigger) {
+                this->pre_close_end_trigger->trigger();
+            }
+        }
+
+        if (this->current_operation == COVER_OPERATION_OPENING ||
+            this->current_operation == COVER_OPERATION_CLOSING) {
+            gdo_door_stop();
+        }
+
         if (pos == COVER_OPEN) {
             gdo_door_open();
         } else if (pos == COVER_CLOSED) {
             this->start_pre_close();
         } else {
-            gdo_door_move_to_target(pos * 10000);
+            if (pos < this->position) {
+                this->start_pre_close(10000 - (pos * 10000));
+            } else {
+                gdo_door_move_to_target(10000 - (pos * 10000));
+            }
         }
     }
 }
